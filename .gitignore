@@ -45,3 +45,9 @@ app.*.map.json
 /android/app/release
 
 replay_pid*.log
+
+# Firebase configuration & client keys
+android/app/google-services.json
+lib/firebase_options.dart
+firebase.json
+
