@@ -52,7 +52,7 @@ class SoraTheme {
           style: FilledButton.styleFrom(
             backgroundColor: SoraColors.primary,
             foregroundColor: SoraColors.onPrimary,
-            minimumSize: const Size(double.infinity, 52),
+            minimumSize: const Size(64, 48),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.5),
           ),
@@ -63,7 +63,7 @@ class SoraTheme {
           style: OutlinedButton.styleFrom(
             foregroundColor: SoraColors.primary,
             side: const BorderSide(color: SoraColors.primary, width: 1.5),
-            minimumSize: const Size(double.infinity, 52),
+            minimumSize: const Size(64, 48),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
