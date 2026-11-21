@@ -5,6 +5,7 @@ import 'package:sora_app/core/theme/sora_colors.dart';
 import 'package:sora_app/core/routes/sora_router.dart';
 import 'package:sora_app/models/diseno_personalizado.dart';
 import 'package:sora_app/features/disenador/disenador_provider.dart';
+import 'package:sora_app/providers/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,6 +13,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
+    final auth = context.watch<AuthProvider>();
+    final primerNombre = auth.nombreUsuario.trim().split(' ').first;
+
     return Scaffold(
       backgroundColor: SoraColors.background,
       body: SafeArea(
@@ -27,7 +31,7 @@ class HomeScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Hola 👋', style: tt.bodyMedium),
+                      Text('Hola, $primerNombre 👋', style: tt.bodyMedium),
                       Text(
                         'SORA',
                         style: tt.displayMedium?.copyWith(

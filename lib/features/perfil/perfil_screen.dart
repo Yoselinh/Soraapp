@@ -7,6 +7,7 @@ import 'package:sora_app/data/pedidos_repository.dart';
 import 'package:sora_app/models/taller.dart';
 import 'package:sora_app/features/disenador/disenador_provider.dart';
 import 'package:sora_app/features/cotizacion/cotizacion_provider.dart';
+import 'package:sora_app/providers/auth_provider.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -19,6 +20,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
   String _nombre = 'Usuario SORA';
   String _email = 'usuario@sora.pe';
   bool _notificaciones = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final auth = context.read<AuthProvider>();
+    _nombre = auth.nombreUsuario;
+    _email = auth.emailUsuario;
+  }
 
   // ── Avatar con inicial ──────────────────────────────────────────────────────
   String get _inicial => _nombre.trim().isNotEmpty ? _nombre.trim()[0].toUpperCase() : 'U';
@@ -86,6 +95,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     if (confirmar == true && mounted) {
       context.read<DisenadorProvider>().reiniciar();
       context.read<CotizacionProvider>().reiniciar();
+      context.read<AuthProvider>().cerrarSesion();
       setState(() {
         _nombre = 'Usuario SORA';
         _email = 'usuario@sora.pe';
@@ -105,6 +115,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
+      context.go(SoraRoutes.auth);
     }
   }
 
@@ -312,7 +323,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         onTap: () => _editarCampo(
                           titulo: 'Editar nombre',
                           valorActual: _nombre,
-                          onGuardado: (v) => setState(() => _nombre = v),
+                          onGuardado: (v) {
+                            setState(() => _nombre = v);
+                            context.read<AuthProvider>().actualizarDatosUsuario(nombre: v);
+                          },
                         ),
                         child: Stack(
                           alignment: Alignment.bottomRight,
@@ -347,7 +361,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         onTap: () => _editarCampo(
                           titulo: 'Editar nombre',
                           valorActual: _nombre,
-                          onGuardado: (v) => setState(() => _nombre = v),
+                          onGuardado: (v) {
+                            setState(() => _nombre = v);
+                            context.read<AuthProvider>().actualizarDatosUsuario(nombre: v);
+                          },
                         ),
                         child: Text(
                           _nombre,
@@ -361,7 +378,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           titulo: 'Editar email',
                           valorActual: _email,
                           keyboardType: TextInputType.emailAddress,
-                          onGuardado: (v) => setState(() => _email = v),
+                          onGuardado: (v) {
+                            setState(() => _email = v);
+                            context.read<AuthProvider>().actualizarDatosUsuario(email: v);
+                          },
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -459,7 +479,94 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             Switch(
                               value: _notificaciones,
                               onChanged: (v) => setState(() => _notificaciones = v),
-                              activeColor: SoraColors.primary,
+                              activeThumbColor: SoraColors.primary,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _SectionLabel(label: 'Rol de Usuario'),
+                      const SizedBox(height: 8),
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: SoraColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: SoraColors.primary.withAlpha(50)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: SoraColors.primary.withAlpha(20),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.storefront, color: SoraColors.primary, size: 20),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(
+                                  child: Text(
+                                    '¿Tienes un taller de confección?',
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Ingresa al panel del taller para gestionar cotizaciones recibidas, actualizar avances de producción y configurar tu tarifario.',
+                              style: TextStyle(fontSize: 12, color: SoraColors.disabled),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton.icon(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: SoraColors.primary,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                                icon: const Icon(Icons.business_center_outlined, size: 18),
+                                label: const Text('Acceso para Talleres'),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      backgroundColor: SoraColors.surface,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      title: const Row(
+                                        children: [
+                                          Icon(Icons.lock_outline, color: SoraColors.primary),
+                                          SizedBox(width: 8),
+                                          Text('Cuenta de Taller'),
+                                        ],
+                                      ),
+                                      content: const Text(
+                                        'Actualmente estás conectado como Cliente.\n\nPara ingresar al panel de gestión y tarifario, debes iniciar sesión con una cuenta de Taller Textil.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(ctx).pop(),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        FilledButton(
+                                          style: FilledButton.styleFrom(backgroundColor: SoraColors.primary),
+                                          onPressed: () {
+                                            Navigator.of(ctx).pop();
+                                            context.read<AuthProvider>().cerrarSesion();
+                                            context.go(SoraRoutes.auth);
+                                          },
+                                          child: const Text('Cambiar a Cuenta Taller'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),
