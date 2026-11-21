@@ -1,213 +1,141 @@
-import 'package:sora_app/models/diseno_personalizado.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sora_app/models/taller.dart';
 
-/// Repositorio en memoria con datos mock de talleres
-class TalleresRepository {
-  TalleresRepository._();
+/// Repositorio de talleres con sincronización en tiempo real con Cloud Firestore
+class TalleresRepository extends ChangeNotifier {
+  TalleresRepository._() {
+    _iniciarSincronizacionFirestore();
+  }
   static final TalleresRepository instance = TalleresRepository._();
 
-  final List<Taller> talleres = const [
-    Taller(
-      id: 'taller_01',
-      nombre: 'Confecciones Lima Norte',
-      ciudad: 'Lima',
-      calificacion: 4.8,
-      plazoDias: 12,
-      descripcion: 'Taller especializado en ropa deportiva, uniformes corporativos y casacas con acabados premium.',
-      prendas: [
-        TipoPrenda.casaca,
-        TipoPrenda.polo,
-        TipoPrenda.polera,
-        TipoPrenda.buzo,
-        TipoPrenda.uniforme,
-        TipoPrenda.camisa,
-      ],
-      tecnicas: [
-        TecnicaConfeccion.bordado,
-        TecnicaConfeccion.estampado,
-      ],
-      direccion: 'Av. Alfredo Mendiola 3420, Los Olivos',
-      telefono: '+51 984 123 456',
-      pedidosCompletados: 230,
-      tablaPrecios: TablaPrecios(
-        precioBase: 45.0,
-        multiplicadorTela: 1.0,
-        multiplicadorEstampado: 4.0,
-        costoCierreMetal: 6.0,
-        costoCierrePlastico: 3.0,
-        costoBolsilloLateral: 4.0,
-        costoBolsilloPecho: 3.0,
-        costoBolsilloInterno: 5.0,
-        costoBordado: 7.0,
-        costoEstampado: 4.0,
-      ),
-    ),
-    Taller(
-      id: 'taller_02',
-      nombre: 'Textiles Arequipa SAC',
-      ciudad: 'Arequipa',
-      calificacion: 4.5,
-      plazoDias: 18,
-      descripcion: 'Empresa familiar con más de 20 años de experiencia en algodón pima, vestidos y prendas ligeras.',
-      prendas: [
-        TipoPrenda.polo,
-        TipoPrenda.vestido,
-        TipoPrenda.falda,
-        TipoPrenda.camisa,
-        TipoPrenda.short,
-      ],
-      tecnicas: [
-        TecnicaConfeccion.estampado,
-      ],
-      direccion: 'Calle San Francisco 218, Arequipa',
-      telefono: '+51 959 789 012',
-      pedidosCompletados: 180,
-      tablaPrecios: TablaPrecios(
-        precioBase: 38.0,
-        multiplicadorTela: 0.9,
-        multiplicadorEstampado: 3.5,
-        costoCierreMetal: 5.0,
-        costoCierrePlastico: 2.5,
-        costoBolsilloLateral: 3.5,
-        costoBolsilloPecho: 2.5,
-        costoBolsilloInterno: 4.5,
-        costoBordado: 6.5,
-        costoEstampado: 3.5,
-      ),
-    ),
-    Taller(
-      id: 'taller_03',
-      nombre: 'Moda & Estilo Trujillo',
-      ciudad: 'Trujillo',
-      calificacion: 4.7,
-      plazoDias: 14,
-      descripcion: 'Atelier y taller de corte y confección enfocado en vestidos elegantes, faldas, pantalones y sastrería casual.',
-      prendas: [
-        TipoPrenda.vestido,
-        TipoPrenda.falda,
-        TipoPrenda.pantalon,
-        TipoPrenda.short,
-        TipoPrenda.camisa,
-      ],
-      tecnicas: [
-        TecnicaConfeccion.bordado,
-        TecnicaConfeccion.estampado,
-      ],
-      direccion: 'Jr. Pizarro 485, Centro Histórico',
-      telefono: '+51 944 654 321',
-      pedidosCompletados: 195,
-      tablaPrecios: TablaPrecios(
-        precioBase: 42.0,
-        multiplicadorTela: 1.1,
-        multiplicadorEstampado: 3.8,
-        costoCierreMetal: 5.5,
-        costoCierrePlastico: 2.8,
-        costoBolsilloLateral: 3.8,
-        costoBolsilloPecho: 2.8,
-        costoBolsilloInterno: 4.0,
-        costoBordado: 8.0,
-        costoEstampado: 4.5,
-      ),
-    ),
-    Taller(
-      id: 'taller_04',
-      nombre: 'KustumWear Cusco',
-      ciudad: 'Cusco',
-      calificacion: 4.6,
-      plazoDias: 20,
-      descripcion: 'Especialistas en bordado de alta densidad computarizado, prendas abrigadoras, casacas y buzos.',
-      prendas: [
-        TipoPrenda.casaca,
-        TipoPrenda.polera,
-        TipoPrenda.buzo,
-        TipoPrenda.uniforme,
-      ],
-      tecnicas: [
-        TecnicaConfeccion.bordado,
-      ],
-      direccion: 'Av. El Sol 820, Wanchaq',
-      telefono: '+51 984 321 987',
-      pedidosCompletados: 160,
-      tablaPrecios: TablaPrecios(
-        precioBase: 40.0,
-        multiplicadorTela: 0.95,
-        multiplicadorEstampado: 3.2,
-        costoCierreMetal: 4.5,
-        costoCierrePlastico: 2.0,
-        costoBolsilloLateral: 3.0,
-        costoBolsilloPecho: 2.0,
-        costoBolsilloInterno: 3.5,
-        costoBordado: 6.0,
-        costoEstampado: 3.0,
-      ),
-    ),
-    Taller(
-      id: 'taller_05',
-      nombre: 'Creaciones & Moda Gamarra',
-      ciudad: 'Lima',
-      calificacion: 4.9,
-      plazoDias: 10,
-      descripcion: 'Taller de confección a gran escala en el emporio comercial de Gamarra. Excelente velocidad y acabados.',
-      prendas: [
-        TipoPrenda.polo,
-        TipoPrenda.camisa,
-        TipoPrenda.pantalon,
-        TipoPrenda.short,
-        TipoPrenda.vestido,
-        TipoPrenda.falda,
-      ],
-      tecnicas: [
-        TecnicaConfeccion.bordado,
-        TecnicaConfeccion.estampado,
-      ],
-      direccion: 'Gamarra 850, Galería Santa Lucía',
-      telefono: '+51 999 888 777',
-      pedidosCompletados: 340,
-      tablaPrecios: TablaPrecios(
-        precioBase: 36.0,
-        multiplicadorTela: 0.9,
-        multiplicadorEstampado: 3.0,
-        costoCierreMetal: 4.0,
-        costoCierrePlastico: 2.0,
-        costoBolsilloLateral: 3.0,
-        costoBolsilloPecho: 2.0,
-        costoBolsilloInterno: 3.5,
-        costoBordado: 5.5,
-        costoEstampado: 3.0,
-      ),
-    ),
-    Taller(
-      id: 'taller_06',
-      nombre: 'Taller Textil del Sur',
-      ciudad: 'Tacna',
-      calificacion: 4.4,
-      plazoDias: 16,
-      descripcion: 'Taller especializado en confección de pantalones de dril, uniformes industriales, shorts y casacas.',
-      prendas: [
-        TipoPrenda.pantalon,
-        TipoPrenda.short,
-        TipoPrenda.uniforme,
-        TipoPrenda.casaca,
-        TipoPrenda.buzo,
-      ],
-      tecnicas: [
-        TecnicaConfeccion.estampado,
-      ],
-      direccion: 'Parque Industrial Mz. G Lote 12',
-      telefono: '+51 952 444 333',
-      pedidosCompletados: 130,
-      tablaPrecios: TablaPrecios(
-        precioBase: 37.0,
-        multiplicadorTela: 0.85,
-        multiplicadorEstampado: 3.2,
-        costoCierreMetal: 4.5,
-        costoCierrePlastico: 2.2,
-        costoBolsilloLateral: 3.2,
-        costoBolsilloPecho: 2.2,
-        costoBolsilloInterno: 3.8,
-        costoBordado: 6.0,
-        costoEstampado: 3.2,
-      ),
-    ),
-  ];
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _firestoreSubscription;
+
+  final List<Taller> _talleres = [];
+
+  List<Taller> get talleres => List.unmodifiable(_talleres);
+
+  // Lista de IDs o nombres de talleres estáticos/mock antiguos que deben limpiarse de Firestore
+  static const _idsMockAEliminar = {
+    'taller_01',
+    'taller_02',
+    'taller_03',
+    'taller_04',
+    'taller_05',
+    'taller_06',
+  };
+
+  static const _nombresMockAEliminar = {
+    'Creaciones & Moda Gamarra',
+    'Taller Textil del Sur',
+    'Bordados y Estilismos Lima',
+    'Confecciones San Martín',
+    'Tejidos & Confección Norte',
+    'Estampados & Diseños Cusco',
+  };
+
+  void _iniciarSincronizacionFirestore() {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      _firestoreSubscription = firestore
+          .collection('talleres')
+          .snapshots()
+          .listen((snapshot) {
+        _talleres.clear();
+        for (final doc in snapshot.docs) {
+          final data = doc.data();
+          final nombre = data['nombre'] as String? ?? '';
+
+          // Si es un documento mock heredado, eliminarlo de la base de datos Firestore y no mostrarlo
+          if (_idsMockAEliminar.contains(doc.id) || _nombresMockAEliminar.contains(nombre)) {
+            firestore.collection('talleres').doc(doc.id).delete().catchError((e) {
+              debugPrint('Aviso al purgar taller mock ${doc.id}: $e');
+            });
+            continue;
+          }
+
+          try {
+            final taller = Taller.fromMap(data, doc.id);
+            _talleres.add(taller);
+          } catch (e) {
+            debugPrint('Error al deserializar taller ${doc.id}: $e');
+          }
+        }
+        notifyListeners();
+      }, onError: (error) {
+        debugPrint('Aviso Firestore talleres: $error');
+      });
+    } catch (e) {
+      debugPrint('Aviso al conectar Firestore talleres: $e');
+    }
+  }
+
+  /// Califica un taller con una nueva puntuación del cliente (1.0 a 5.0) y actualiza Firestore
+  Future<void> calificarTaller(String tallerId, double puntuacion) async {
+    final index = _talleres.indexWhere((t) => t.id == tallerId);
+    if (index == -1) return;
+
+    final tallerActual = _talleres[index];
+    final totalActual = tallerActual.totalCalificaciones;
+    final califActual = tallerActual.calificacion;
+
+    final nuevoTotal = totalActual + 1;
+    final nuevaCalificacion = totalActual == 0
+        ? puntuacion
+        : double.parse(((califActual * totalActual + puntuacion) / nuevoTotal).toStringAsFixed(1));
+
+    final tallerActualizado = tallerActual.copyWith(
+      calificacion: nuevaCalificacion,
+      totalCalificaciones: nuevoTotal,
+    );
+
+    _talleres[index] = tallerActualizado;
+    notifyListeners();
+
+    try {
+      await FirebaseFirestore.instance.collection('talleres').doc(tallerId).update({
+        'calificacion': nuevaCalificacion,
+        'totalCalificaciones': nuevoTotal,
+      });
+    } catch (e) {
+      debugPrint('Error al guardar calificación en Firestore: $e');
+    }
+  }
+
+  Future<void> actualizarTaller(Taller tallerActualizado) async {
+    final index = _talleres.indexWhere((t) => t.id == tallerActualizado.id);
+    if (index != -1) {
+      _talleres[index] = tallerActualizado;
+    } else {
+      _talleres.add(tallerActualizado);
+    }
+    notifyListeners();
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('talleres')
+          .doc(tallerActualizado.id)
+          .set(tallerActualizado.toMap());
+    } catch (e) {
+      debugPrint('Error al actualizar taller en Firestore: $e');
+    }
+  }
+
+  Future<void> eliminarTaller(String tallerId) async {
+    _talleres.removeWhere((t) => t.id == tallerId);
+    notifyListeners();
+
+    try {
+      await FirebaseFirestore.instance.collection('talleres').doc(tallerId).delete();
+    } catch (e) {
+      debugPrint('Error al eliminar taller de Firestore: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _firestoreSubscription?.cancel();
+    super.dispose();
+  }
 }
