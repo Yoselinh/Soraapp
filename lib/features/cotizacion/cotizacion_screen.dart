@@ -7,6 +7,7 @@ import 'package:sora_app/models/taller.dart';
 import 'package:sora_app/data/pedidos_repository.dart';
 import 'package:sora_app/features/disenador/disenador_provider.dart';
 import 'package:sora_app/features/cotizacion/cotizacion_provider.dart';
+import 'package:sora_app/providers/auth_provider.dart';
 
 /// Pantalla de comparación de cotizaciones por taller
 class CotizacionScreen extends StatelessWidget {
@@ -218,8 +219,11 @@ class _TarjetaTaller extends StatelessWidget {
                           const Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF8D7060)),
                           Text(taller.ciudad, style: tt.bodySmall),
                           const SizedBox(width: 8),
-                          const Icon(Icons.star, size: 13, color: Color(0xFFF6C324)),
-                          Text(' ${taller.calificacion}', style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w700)),
+                          Icon(Icons.star, size: 13, color: taller.esNuevo ? const Color(0xFF10B981) : const Color(0xFFF6C324)),
+                          Text(
+                            taller.esNuevo ? ' Nuevo' : ' ${taller.calificacion.toStringAsFixed(1)}',
+                            style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
                     ],
@@ -262,40 +266,73 @@ class _TarjetaTaller extends StatelessWidget {
   }
 
   void _confirmarPedido(BuildContext context, Cotizacion cotizacion) {
+    final notasCtrl = TextEditingController();
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: SoraColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('¿Confirmar pedido?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: const Row(
           children: [
-            Text('Taller: ${cotizacion.taller.nombre}'),
-            const SizedBox(height: 4),
-            Text('Total: S/.${cotizacion.total.toStringAsFixed(2)}'),
-            Text('Plazo: ${cotizacion.taller.plazoDias} días'),
+            Icon(Icons.send_outlined, color: SoraColors.primary),
+            SizedBox(width: 8),
+            Text('Enviar Solicitud al Taller'),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Taller: ${cotizacion.taller.nombre}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text('Total estimado: S/.${cotizacion.total.toStringAsFixed(2)}'),
+              Text('Plazo estimado: ${cotizacion.taller.plazoDias} días hábiles'),
+              const SizedBox(height: 14),
+              const Text(
+                'Instrucciones o notas para el taller (opcional):',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: notasCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'Ej. Bordado en hilo dorado, entrega urgente...',
+                  filled: true,
+                  fillColor: SoraColors.background,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: SoraColors.primary),
             onPressed: () {
+              final notas = notasCtrl.text.trim();
               Navigator.of(ctx).pop();
               final disenadorProvider = context.read<DisenadorProvider>();
               final cotProvider = context.read<CotizacionProvider>();
+              final auth = context.read<AuthProvider>();
               final dist = cotProvider.distribucion;
 
               final pedido = Pedido(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                id: 'PED-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+                clienteEmail: auth.emailUsuario,
+                clienteNombre: auth.nombreUsuario,
+                notas: notas,
                 diseno: disenadorProvider.diseno,
                 items: dist.cantidades.entries
                     .where((e) => e.value > 0)
                     .map((e) => PedidoItem(talla: e.key, cantidad: e.value))
                     .toList(),
                 cotizacion: cotizacion,
-                estado: EstadoPedido.confirmado,
+                estado: EstadoPedido.cotizado,
                 fechaCreacion: DateTime.now(),
               );
 
@@ -306,11 +343,13 @@ class _TarjetaTaller extends StatelessWidget {
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Row(
+                  content: Row(
                     children: [
-                      Icon(Icons.check_circle, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('¡Pedido confirmado con éxito!'),
+                      const Icon(Icons.check_circle, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text('¡Solicitud enviada a ${cotizacion.taller.nombre}! El taller la revisará para iniciar producción.'),
+                      ),
                     ],
                   ),
                   backgroundColor: SoraColors.primary,
@@ -319,7 +358,7 @@ class _TarjetaTaller extends StatelessWidget {
                 ),
               );
             },
-            child: const Text('Confirmar'),
+            child: const Text('Enviar Solicitud'),
           ),
         ],
       ),

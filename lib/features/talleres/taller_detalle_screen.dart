@@ -5,7 +5,6 @@ import 'package:sora_app/core/theme/sora_colors.dart';
 import 'package:sora_app/core/routes/sora_router.dart';
 import 'package:sora_app/models/taller.dart';
 import 'package:sora_app/features/disenador/disenador_provider.dart';
-import 'package:sora_app/features/cotizacion/cotizacion_provider.dart';
 
 /// Pantalla de detalle de un taller de confección
 class TallerDetalleScreen extends StatelessWidget {
@@ -73,8 +72,17 @@ class TallerDetalleScreen extends StatelessWidget {
                                       const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF8D7060)),
                                       Text(' ${taller.ciudad}', style: tt.bodySmall),
                                       const SizedBox(width: 10),
-                                      const Icon(Icons.star, size: 14, color: Color(0xFFF6C324)),
-                                      Text(' ${taller.calificacion}', style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w700)),
+                                      Icon(
+                                        Icons.star,
+                                        size: 14,
+                                        color: taller.esNuevo ? const Color(0xFF10B981) : const Color(0xFFF6C324),
+                                      ),
+                                      Text(
+                                        taller.esNuevo
+                                            ? ' Nuevo'
+                                            : ' ${taller.calificacion.toStringAsFixed(1)} (${taller.totalCalificaciones} opiniones)',
+                                        style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w700),
+                                      ),
                                     ],
                                   ),
                                 ],
