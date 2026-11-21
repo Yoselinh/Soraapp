@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
@@ -343,4 +344,96 @@ class DisenoPersonalizado {
         posicionLogo,
         textoLogo,
       );
+
+  Map<String, dynamic> toMap() {
+    return {
+      'prenda': prenda.name,
+      'colorPrincipal': colorPrincipal.value,
+      'colorAccento': colorAccento.value,
+      'colorMangas': colorMangas.value,
+      'colorCuello': colorCuello.value,
+      'panel': panel.name,
+      'posicionesLogo': posicionesLogo.map((p) => p.name).toList(),
+      'textoLogo': textoLogo,
+      'tela': tela.name,
+      'tieneCierreMetal': tieneCierreMetal,
+      'tieneCierrePlastico': tieneCierrePlastico,
+      'tieneBolsilloLateral': tieneBolsilloLateral,
+      'tieneBolsilloPecho': tieneBolsilloPecho,
+      'tieneBolsilloInterno': tieneBolsilloInterno,
+      'largo': largo.name,
+      'tipoEscote': tipoEscote.name,
+      'tipoManga': tipoManga.name,
+      'tipoCintura': tipoCintura.name,
+      'logoPath': logoPath,
+      'logoBase64': logoBytes != null ? base64Encode(logoBytes!) : null,
+      'tecnicaLogo': tecnicaLogo.name,
+      'tamanoLogo': tamanoLogo.name,
+      'posicionLogo': posicionLogo.name,
+    };
+  }
+
+  factory DisenoPersonalizado.fromMap(Map<String, dynamic> map) {
+    return DisenoPersonalizado(
+      prenda: TipoPrenda.values.firstWhere(
+        (e) => e.name == map['prenda'],
+        orElse: () => TipoPrenda.casaca,
+      ),
+      colorPrincipal: Color(map['colorPrincipal'] as int? ?? 0xFF1A3A5C),
+      colorAccento: Color(map['colorAccento'] as int? ?? 0xFFB04F36),
+      colorMangas: Color(map['colorMangas'] as int? ?? 0xFF1A3A5C),
+      colorCuello: Color(map['colorCuello'] as int? ?? 0xFF2B1C14),
+      panel: TipoPanel.values.firstWhere(
+        (e) => e.name == map['panel'],
+        orElse: () => TipoPanel.liso,
+      ),
+      posicionesLogo: (map['posicionesLogo'] as List<dynamic>?)
+              ?.map((item) => PosicionLogo.values.firstWhere(
+                    (e) => e.name == item,
+                    orElse: () => PosicionLogo.pecho,
+                  ))
+              .toList() ??
+          [PosicionLogo.pecho],
+      textoLogo: map['textoLogo'] as String? ?? '',
+      tela: TipoTela.values.firstWhere(
+        (e) => e.name == map['tela'],
+        orElse: () => TipoTela.taslan,
+      ),
+      tieneCierreMetal: map['tieneCierreMetal'] as bool? ?? false,
+      tieneCierrePlastico: map['tieneCierrePlastico'] as bool? ?? false,
+      tieneBolsilloLateral: map['tieneBolsilloLateral'] as bool? ?? false,
+      tieneBolsilloPecho: map['tieneBolsilloPecho'] as bool? ?? false,
+      tieneBolsilloInterno: map['tieneBolsilloInterno'] as bool? ?? false,
+      largo: LargoPrenda.values.firstWhere(
+        (e) => e.name == map['largo'],
+        orElse: () => LargoPrenda.midi,
+      ),
+      tipoEscote: TipoEscote.values.firstWhere(
+        (e) => e.name == map['tipoEscote'],
+        orElse: () => TipoEscote.redondo,
+      ),
+      tipoManga: TipoManga.values.firstWhere(
+        (e) => e.name == map['tipoManga'],
+        orElse: () => TipoManga.corta,
+      ),
+      tipoCintura: TipoCintura.values.firstWhere(
+        (e) => e.name == map['tipoCintura'],
+        orElse: () => TipoCintura.clasica,
+      ),
+      logoPath: map['logoPath'] as String?,
+      logoBytes: map['logoBase64'] != null ? base64Decode(map['logoBase64'] as String) : null,
+      tecnicaLogo: TecnicaConfeccion.values.firstWhere(
+        (e) => e.name == map['tecnicaLogo'],
+        orElse: () => TecnicaConfeccion.estampado,
+      ),
+      tamanoLogo: TamanoLogo.values.firstWhere(
+        (e) => e.name == map['tamanoLogo'],
+        orElse: () => TamanoLogo.pequeno,
+      ),
+      posicionLogo: PosicionLogo.values.firstWhere(
+        (e) => e.name == map['posicionLogo'],
+        orElse: () => PosicionLogo.pecho,
+      ),
+    );
+  }
 }
